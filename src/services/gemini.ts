@@ -1,13 +1,16 @@
 import { GoogleGenAI } from '@google/genai';
+import { getPrompt, InterviewType } from './promptFactory';
 
 let genAI: GoogleGenAI | null = null;
 let language = 'Python';
 let model = 'gemini-2.5-flash';
+let interviewType: InterviewType = 'algorithmic';
 
 interface Config {
   geminiApiKey: string;
   language: string;
   model: string;
+  interviewType: InterviewType;
 }
 
 function updateConfig(config: Config) {
@@ -22,6 +25,7 @@ function updateConfig(config: Config) {
     });
     language = config.language || 'Python';
     model = config.model || 'gemini-2.5-flash';
+    interviewType = config.interviewType || 'algorithmic';
     console.log('Google AI client initialized with new config');
   } catch (error) {
     console.error('Error initializing Google AI client:', error);
@@ -42,27 +46,7 @@ async function processImages(base64Images: string[]): Promise<ProcessedSolution>
   }
 
   try {
-    const prompt = `You are an expert software engineer. Analyze the screenshots which contain coding interview questions. For each question:
-
-1. Understand the problem completely
-2. Think of the optimal approach
-3. Provide a clean, efficient solution in ${language}
-4. Calculate time and space complexity
-
-Please format your response as a JSON object with this exact structure:
-{
-  "approach": "Brief explanation of the algorithm/approach",
-  "code": "Complete working code solution in ${language}",
-  "timeComplexity": "O(notation) with brief explanation",
-  "spaceComplexity": "O(notation) with brief explanation"
-}
-
-Important guidelines:
-- Code should be production-ready and well-commented
-- Focus on optimal time/space complexity
-- Handle edge cases appropriately
-- Use clear variable names
-- Follow ${language} best practices`;
+    const prompt = getPrompt(interviewType, language).system;
 
     // Convert base64 images to the format expected by Gemini
     const imageParts = base64Images.map(base64 => ({

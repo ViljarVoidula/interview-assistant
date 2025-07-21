@@ -1,22 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import './ConfigScreen.css';
 
+import { InterviewType } from '../services/promptFactory';
+
 interface ConfigProps {
-  onSave: (config: { 
-    provider: string; 
-    openaiApiKey: string; 
-    geminiApiKey: string; 
-    language: string; 
+  onSave: (config: {
+    provider: string;
+    openaiApiKey: string;
+    geminiApiKey: string;
+    language: string;
     model: string;
     audioDeviceId: string;
+    interviewType: InterviewType;
   }) => void;
-  initialConfig?: { 
-    provider: string; 
-    openaiApiKey: string; 
-    geminiApiKey: string; 
-    language: string; 
+  initialConfig?: {
+    provider: string;
+    openaiApiKey: string;
+    geminiApiKey: string;
+    language: string;
     model: string;
     audioDeviceId: string;
+    interviewType: InterviewType;
   };
 }
 
@@ -27,6 +31,7 @@ const ConfigScreen: React.FC<ConfigProps> = ({ onSave, initialConfig }) => {
   const [language, setLanguage] = useState(initialConfig?.language || 'Python');
   const [model, setModel] = useState(initialConfig?.model || 'gpt-3.5-turbo');
   const [audioDeviceId, setAudioDeviceId] = useState(initialConfig?.audioDeviceId || 'default');
+  const [interviewType, setInterviewType] = useState<InterviewType>(initialConfig?.interviewType || 'algorithmic');
   const [audioDevices, setAudioDevices] = useState<{id: string, label: string}[]>([]);
   const [showOpenaiKey, setShowOpenaiKey] = useState(false);
   const [showGeminiKey, setShowGeminiKey] = useState(false);
@@ -63,13 +68,14 @@ const ConfigScreen: React.FC<ConfigProps> = ({ onSave, initialConfig }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({ 
-      provider, 
-      openaiApiKey: openaiApiKey.trim(), 
-      geminiApiKey: geminiApiKey.trim(), 
-      language, 
+    onSave({
+      provider,
+      openaiApiKey: openaiApiKey.trim(),
+      geminiApiKey: geminiApiKey.trim(),
+      language,
       model,
-      audioDeviceId
+      audioDeviceId,
+      interviewType
     });
   };
 
@@ -156,6 +162,20 @@ const ConfigScreen: React.FC<ConfigProps> = ({ onSave, initialConfig }) => {
               <option value="C">C</option>
               <option value="Go">Go</option>
               <option value="Rust">Rust</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="interviewType">Interview Type</label>
+            <select
+              id="interviewType"
+              value={interviewType}
+              onChange={(e) => setInterviewType(e.target.value as InterviewType)}
+              required
+            >
+              <option value="algorithmic">Algorithmic</option>
+              <option value="frontend">Frontend</option>
+              <option value="java-microservices">Java Microservices</option>
             </select>
           </div>
           

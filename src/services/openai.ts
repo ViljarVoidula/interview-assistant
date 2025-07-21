@@ -1,17 +1,20 @@
 import OpenAI from 'openai';
 import dotenv from 'dotenv';
 import fs from 'fs/promises';
+import { getPrompt, InterviewType } from './promptFactory';
 
 dotenv.config();
 
 let openai: OpenAI | null = null;
 let language = process.env.LANGUAGE || "Python";
 let model = process.env.OPENAI_MODEL || 'gpt-3.5-turbo';
+let interviewType: InterviewType = 'algorithmic';
 
 interface Config {
   apiKey: string;
   language: string;
   model: string;
+  interviewType: InterviewType;
 }
 
 function updateConfig(config: Config) {
@@ -25,6 +28,7 @@ function updateConfig(config: Config) {
     });
     language = config.language || 'Python';
     model = config.model || 'gpt-3.5-turbo';
+    interviewType = config.interviewType || 'algorithmic';
     // console.log('OpenAI client initialized with new config');
   } catch (error) {
     console.error('Error initializing OpenAI client:', error);
@@ -38,7 +42,8 @@ if (process.env.OPENAI_API_KEY) {
     updateConfig({
       apiKey: process.env.OPENAI_API_KEY,
       language: process.env.LANGUAGE || 'Python',
-      model: process.env.OPENAI_MODEL || 'gpt-3.5-turbo'
+      model: process.env.OPENAI_MODEL || 'gpt-3.5-turbo',
+      interviewType: (process.env.INTERVIEW_TYPE as InterviewType) || 'algorithmic'
     });
   } catch (error) {
     console.error('Error initializing OpenAI with environment variables:', error);
@@ -62,22 +67,16 @@ export async function processScreenshots(screenshots: { path: string }[]): Promi
   }
 
   try {
+    const prompt = getPrompt(interviewType, language);
     const messages = [
       {
         role: "system" as const,
-        content: `You are an expert coding interview assistant. Analyze the coding question from the screenshots and provide a solution in ${language}.
-                 Return the response in the following JSON format:
-                 {
-                   "approach": "Detailed approach to solve the problem on how are we solving the problem, that the interviewee will speak out loud and in easy explainatory words of common language without jargon",
-                   "code": "The complete solution code optimized for the problem with comments explaining the code and logic",
-                   "timeComplexity": "Big O analysis of time complexity with the reason",
-                   "spaceComplexity": "Big O analysis of space complexity with the reason"
-                 }`
+        content: prompt.system
       },
       {
         role: "user" as const,
         content: [
-          { type: "text", text: "Here is a coding interview question. Please analyze and provide a solution." } as MessageContent
+          { type: "text", text: prompt.user } as MessageContent
         ]
       }
     ];

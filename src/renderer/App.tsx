@@ -23,6 +23,8 @@ interface HistoryItem {
   screenshots?: Screenshot[]; // Only for screenshot processing
 }
 
+import { InterviewType } from '../services/promptFactory';
+
 interface Config {
   provider: string;
   openaiApiKey: string;
@@ -30,6 +32,7 @@ interface Config {
   language: string;
   model: string;
   audioDeviceId: string;
+  interviewType: InterviewType;
 }
 
 declare global {

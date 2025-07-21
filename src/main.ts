@@ -6,6 +6,7 @@ import { promisify } from 'util';
 import openaiService from './services/openai';
 import geminiService from './services/gemini';
 import audioRecorderService from './services/audioRecorder';
+import { InterviewType } from './services/promptFactory';
 
 const execFileAsync = promisify(execFile);
 
@@ -25,6 +26,7 @@ interface Config {
   language: string;
   model: string;
   audioDeviceId: string;
+  interviewType: InterviewType;
 }
 
 let config: Config | null = null;
@@ -51,7 +53,8 @@ async function loadConfig(): Promise<Config | null> {
     const envLanguage = process.env.APP_LANGUAGE;
     const envModel = process.env.AI_MODEL;
     const envProvider = process.env.AI_PROVIDER;
-    
+    const envInterviewType = process.env.INTERVIEW_TYPE as InterviewType;
+
     if ((envOpenaiKey || envGeminiKey) && envLanguage && envModel && envProvider) {
       const envConfig: Config = {
         provider: envProvider,
@@ -59,7 +62,8 @@ async function loadConfig(): Promise<Config | null> {
         geminiApiKey: envGeminiKey || '',
         language: envLanguage,
         model: envModel,
-        audioDeviceId: 'default'
+        audioDeviceId: 'default',
+        interviewType: envInterviewType || 'algorithmic'
       };
       
       // Initialize the appropriate service
@@ -67,13 +71,15 @@ async function loadConfig(): Promise<Config | null> {
         openaiService.updateConfig({
           apiKey: envOpenaiKey,
           language: envLanguage,
-          model: envModel
+          model: envModel,
+          interviewType: envInterviewType || 'algorithmic'
         });
       } else if (envProvider === 'gemini' && envGeminiKey) {
         geminiService.updateConfig({
           geminiApiKey: envGeminiKey,
           language: envLanguage,
-          model: envModel
+          model: envModel,
+          interviewType: envInterviewType || 'algorithmic'
         });
       }
       
@@ -91,7 +97,8 @@ async function loadConfig(): Promise<Config | null> {
         geminiApiKey: loadedConfig.geminiApiKey || '',
         language: loadedConfig.language,
         model: loadedConfig.model,
-        audioDeviceId: loadedConfig.audioDeviceId || 'default'
+        audioDeviceId: loadedConfig.audioDeviceId || 'default',
+        interviewType: loadedConfig.interviewType || 'algorithmic'
       };
       
       // Initialize the appropriate service
@@ -99,13 +106,15 @@ async function loadConfig(): Promise<Config | null> {
         openaiService.updateConfig({
           apiKey: completeConfig.openaiApiKey,
           language: completeConfig.language,
-          model: completeConfig.model
+          model: completeConfig.model,
+          interviewType: completeConfig.interviewType
         });
       } else if (completeConfig.provider === 'gemini' && completeConfig.geminiApiKey) {
         geminiService.updateConfig({
           geminiApiKey: completeConfig.geminiApiKey,
           language: completeConfig.language,
-          model: completeConfig.model
+          model: completeConfig.model,
+          interviewType: completeConfig.interviewType
         });
       }
       
@@ -143,13 +152,15 @@ async function saveConfig(newConfig: Config): Promise<void> {
       openaiService.updateConfig({
         apiKey: newConfig.openaiApiKey,
         language: newConfig.language,
-        model: newConfig.model
+        model: newConfig.model,
+        interviewType: newConfig.interviewType
       });
     } else if (newConfig.provider === 'gemini' && newConfig.geminiApiKey) {
       geminiService.updateConfig({
         geminiApiKey: newConfig.geminiApiKey,
         language: newConfig.language,
-        model: newConfig.model
+        model: newConfig.model,
+        interviewType: newConfig.interviewType
       });
     }
     
